@@ -193,7 +193,7 @@ export function PortfolioPage() {
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-zinc-600 dark:text-zinc-300 md:flex">
             {navItems.map((item) => (
-              <Link key={item.label} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined} className="transition hover:text-blue-500">
+              <Link key={item.label} href={item.href} className="transition hover:text-blue-500">
                 {item.label}
               </Link>
             ))}
