@@ -151,6 +151,120 @@ function SectionHeading({ eyebrow, title, description }: { eyebrow: string; titl
   );
 }
 
+function ContactForm() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        const data = await res.json();
+        setErrorMsg(data.error || "Something went wrong.");
+        setStatus("error");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again.");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      className="rounded-[24px] border border-white/70 bg-zinc-950/95 p-6 text-white dark:border-white/10"
+    >
+      <form onSubmit={handleSubmit} action="#" className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="space-y-2 text-sm text-zinc-300">
+            <span>Name</span>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              placeholder="Your name"
+            />
+          </label>
+          <label className="space-y-2 text-sm text-zinc-300">
+            <span>Email</span>
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+              placeholder="you@example.com"
+            />
+          </label>
+        </div>
+        <label className="space-y-2 text-sm text-zinc-300">
+          <span>Message</span>
+          <textarea
+            name="message"
+            value={form.message}
+            onChange={handleChange}
+            required
+            rows={5}
+            className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none transition focus:border-blue-500"
+            placeholder="Tell me about the opportunity..."
+          />
+        </label>
+
+        {status === "success" && (
+          <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-sm text-emerald-400">
+            ✅ Message sent! I&apos;ll get back to you soon.
+          </div>
+        )}
+        {status === "error" && (
+          <div className="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400">
+            ❌ {errorMsg}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {status === "loading" ? (
+            <>
+              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+              Sending...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4" /> Send Message
+            </>
+          )}
+        </button>
+      </form>
+    </motion.div>
+  );
+}
+
 export function PortfolioPage() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -455,25 +569,7 @@ export function PortfolioPage() {
                 </a>
               </div>
             </motion.div>
-            <motion.form initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} className="space-y-4 rounded-[24px] border border-white/70 bg-zinc-950/95 p-6 text-white dark:border-white/10">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Name</span>
-                  <input className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none ring-0 transition focus:border-blue-500" placeholder="Your name" />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Email</span>
-                  <input type="email" className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none transition focus:border-blue-500" placeholder="you@example.com" />
-                </label>
-              </div>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Message</span>
-                <textarea rows={5} className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm outline-none transition focus:border-blue-500" placeholder="Tell me about the opportunity..." />
-              </label>
-              <Button className="w-full justify-center">
-                <Send className="mr-2 h-4 w-4" /> Send Message
-              </Button>
-            </motion.form>
+            <ContactForm />
           </div>
         </section>
       </main>
